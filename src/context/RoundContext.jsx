@@ -63,6 +63,15 @@ function reducer(state, action) {
       }
     }
 
+    case 'UPDATE_ROUND_SETUP': {
+      // Saves name/team/config changes to an existing round without touching hole data
+      const { players, teams, config, name, course, date } = action.payload
+      return {
+        ...state,
+        round: { ...state.round, players, teams, config, name, course, date },
+      }
+    }
+
     case 'NAVIGATE': {
       const { screen, holeNumber } = action.payload
       return {

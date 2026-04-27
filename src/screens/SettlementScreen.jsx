@@ -11,8 +11,7 @@ export default function SettlementScreen() {
   const netTotals  = useMemo(() => computePlayerNetTotals(round),    [round])
   const txns       = useMemo(() => simplifyDebts(netTotals, round.players), [netTotals, round.players])
 
-  const dollarColor = (v) =>
-    v > 0 ? 'text-green-400' : v < 0 ? 'text-red-400' : 'text-gray-400'
+  const dc = (v) => v > 0 ? 'text-green-400' : v < 0 ? 'text-red-400' : 'text-open-muted'
 
   const handleReset = () => {
     if (confirm('Start a new round? Current round data will be cleared.')) {
@@ -52,42 +51,48 @@ export default function SettlementScreen() {
   const goOverview = () => dispatch({ type: 'NAVIGATE', payload: { screen: 'overview' } })
 
   return (
-    <div className="min-h-dvh bg-gray-950 flex flex-col">
+    <div className="min-h-dvh bg-open-950 flex flex-col">
 
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-gray-900 border-b border-gray-800 pt-safe">
-        <div className="flex items-center px-4 py-3">
-          <button onClick={goOverview} className="text-gray-400 text-sm active:opacity-60 mr-3">
-            ‹ Back
+      <header className="sticky top-0 z-20 bg-open-900 border-b border-open-700 pt-safe">
+        <div className="px-4 pt-4 pb-5">
+          <button onClick={goOverview} className="text-open-amber text-sm font-medium active:opacity-60 mb-3 flex items-center gap-1">
+            ‹ Back to Overview
           </button>
-          <div className="flex-1">
-            <h1 className="text-white font-black text-lg leading-none">Settlement</h1>
-            <p className="text-gray-500 text-xs mt-0.5">
-              {round.name || round.course || 'Round complete'}
+          <div className="text-center">
+            <p className="text-open-amber text-[10px] tracking-[0.45em] uppercase font-bold mb-1">The</p>
+            <h1 className="font-serif text-3xl font-black text-open-cream tracking-tight leading-none">
+              SETTLEMENT
+            </h1>
+            <div className="h-px bg-open-amber/50 mt-3 mx-auto w-20" />
+            <p className="text-open-muted text-[10px] tracking-[0.35em] uppercase mt-2">
+              {round.name || round.course || 'Round Complete'}
             </p>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-safe">
+      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-safe">
 
         {/* Who pays whom */}
-        <section className="bg-gray-900 rounded-2xl p-4">
-          <h2 className="text-white font-bold text-lg mb-3">Who Pays Whom</h2>
+        <section className="bg-open-900 rounded-2xl overflow-hidden border border-open-700">
+          <div className="bg-open-amber px-4 py-2.5">
+            <h2 className="text-open-950 font-black text-xs uppercase tracking-[0.25em]">Who Pays Whom</h2>
+          </div>
           {txns.length === 0 ? (
-            <div className="text-center py-4">
-              <p className="text-4xl mb-2">🤝</p>
-              <p className="text-green-400 font-bold">All square!</p>
-              <p className="text-gray-500 text-sm">No payments needed.</p>
+            <div className="text-center py-6">
+              <p className="text-3xl mb-2">🤝</p>
+              <p className="text-green-400 font-black text-base">All square!</p>
+              <p className="text-open-muted text-sm mt-1">No payments needed.</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-open-700/50">
               {txns.map((t, i) => (
-                <div key={i} className="flex items-center gap-3 bg-gray-800 rounded-xl px-4 py-3.5">
+                <div key={i} className="flex items-center gap-3 px-4 py-3.5">
                   <span className="text-red-400 font-bold text-sm flex-1">{t.from.name}</span>
-                  <span className="text-gray-500 text-sm">pays</span>
-                  <span className="text-yellow-400 font-black text-base">${t.amount.toFixed(2)}</span>
-                  <span className="text-gray-500 text-sm">to</span>
+                  <span className="text-open-muted text-sm">pays</span>
+                  <span className="text-open-amber font-black text-lg">${t.amount.toFixed(2)}</span>
+                  <span className="text-open-muted text-sm">to</span>
                   <span className="text-green-400 font-bold text-sm flex-1 text-right">{t.to.name}</span>
                 </div>
               ))}
@@ -95,30 +100,36 @@ export default function SettlementScreen() {
           )}
         </section>
 
-        {/* Per-player net */}
-        <section className="bg-gray-900 rounded-2xl overflow-hidden">
-          <div className="px-4 pt-4 pb-2">
-            <h2 className="text-white font-bold text-lg">Player Totals</h2>
-          </div>
-          <div className="grid grid-cols-4 px-4 py-2 border-b border-gray-800 text-gray-500 text-xs font-bold uppercase">
+        {/* Per-player net — leaderboard style */}
+        <section className="bg-open-900 rounded-2xl overflow-hidden border border-open-700">
+          <div
+            className="bg-open-amber px-3 py-2.5 text-open-950 text-xs font-black uppercase tracking-[0.2em]"
+            style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr' }}
+          >
             <span>Player</span>
             <span className="text-right">Crack</span>
-            <span className="text-right">Green+Chip</span>
+            <span className="text-right">Green+🪙</span>
             <span className="text-right">Net</span>
           </div>
-          {breakdown.map(p => (
-            <div key={p.playerId} className="grid grid-cols-4 px-4 py-3.5 border-b border-gray-800 last:border-0 items-center">
+          {breakdown.map((p, idx) => (
+            <div
+              key={p.playerId}
+              className={`px-3 py-3.5 border-b border-open-700/50 last:border-0 items-center ${
+                idx % 2 === 0 ? 'bg-open-900' : 'bg-open-800/30'
+              }`}
+              style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr' }}
+            >
               <div>
-                <p className="text-white text-sm font-bold leading-tight">{p.name}</p>
-                <p className="text-gray-600 text-xs">{p.teamName}</p>
+                <p className="text-open-cream text-sm font-bold leading-tight">{p.name}</p>
+                <p className="text-open-muted/60 text-xs">{p.teamName}</p>
               </div>
-              <span className={`text-right text-sm ${dollarColor(p.crack)}`}>
+              <span className={`text-right text-sm ${dc(p.crack)}`}>
                 {p.crack >= 0 ? '+' : ''}${Math.abs(p.crack).toFixed(2)}
               </span>
-              <span className={`text-right text-sm ${dollarColor(r2(p.greenie + p.chip))}`}>
+              <span className={`text-right text-sm ${dc(r2(p.greenie + p.chip))}`}>
                 {r2(p.greenie + p.chip) >= 0 ? '+' : ''}${Math.abs(r2(p.greenie + p.chip)).toFixed(2)}
               </span>
-              <span className={`text-right text-sm font-black ${dollarColor(p.net)}`}>
+              <span className={`text-right text-sm font-black ${dc(p.net)}`}>
                 {p.net >= 0 ? '+' : ''}${Math.abs(p.net).toFixed(2)}
               </span>
             </div>
@@ -126,26 +137,28 @@ export default function SettlementScreen() {
         </section>
 
         {/* Breakdown detail */}
-        <section className="bg-gray-900 rounded-2xl p-4">
-          <h2 className="text-white font-bold text-lg mb-3">Breakdown</h2>
-          <div className="space-y-3">
+        <section className="bg-open-900 rounded-2xl overflow-hidden border border-open-700">
+          <div className="bg-open-amber px-4 py-2.5">
+            <h2 className="text-open-950 font-black text-xs uppercase tracking-[0.25em]">Breakdown</h2>
+          </div>
+          <div className="px-4 py-3 space-y-4">
             {breakdown.map(p => (
-              <div key={p.playerId} className="border-b border-gray-800 pb-3 last:border-0 last:pb-0">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-white font-bold">{p.name}</span>
-                  <span className={`font-black ${dollarColor(p.net)}`}>
+              <div key={p.playerId} className="border-b border-open-700/50 pb-4 last:border-0 last:pb-0">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-open-cream font-bold">{p.name}</span>
+                  <span className={`font-black ${dc(p.net)}`}>
                     {p.net >= 0 ? '+' : ''}${Math.abs(p.net).toFixed(2)}
                   </span>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {[
                     { label: 'Crack points', value: p.crack },
                     { label: 'Greenie bets',  value: p.greenie },
                     { label: 'Poker chips',   value: p.chip },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between text-sm">
-                      <span className="text-gray-500">{label}</span>
-                      <span className={dollarColor(value)}>
+                      <span className="text-open-muted">{label}</span>
+                      <span className={dc(value)}>
                         {value >= 0 ? '+' : ''}${Math.abs(value).toFixed(2)}
                       </span>
                     </div>
@@ -160,13 +173,13 @@ export default function SettlementScreen() {
         <div className="space-y-3">
           <button
             onClick={handleExport}
-            className="w-full py-4 rounded-2xl bg-gray-800 text-white font-bold text-base active:scale-95 transition-all"
+            className="w-full py-4 rounded-2xl bg-open-800 text-open-cream font-bold text-base active:scale-95 transition-all border border-open-700"
           >
             📋 Copy Summary to Clipboard
           </button>
           <button
             onClick={handleReset}
-            className="w-full py-4 rounded-2xl bg-red-950 border border-red-900/50 text-red-400 font-bold text-base active:scale-95 transition-all"
+            className="w-full py-4 rounded-2xl bg-open-950 border border-red-900/40 text-red-400 font-bold text-base active:scale-95 transition-all"
           >
             Start New Round
           </button>

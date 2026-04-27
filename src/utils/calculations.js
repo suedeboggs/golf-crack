@@ -27,12 +27,17 @@ export function getHolePointAwards(hole, players) {
   return awards.filter(a => a.teamId)
 }
 
-/** Cumulative points per team for holes 0..(holeIndex-1) (0-based index). */
+/**
+ * Cumulative points per team for holes 0..(holeIndex-1) (0-based index).
+ * Points are multiplied by the crack multiplier so cracked holes award more
+ * points, which correctly gates who can crack subsequent holes.
+ */
 export function getTeamPointsBefore(holes, holeIndex, players) {
   const totals = {}
   for (let i = 0; i < holeIndex; i++) {
+    const mult = getHoleMultiplier(holes[i])
     getHolePointAwards(holes[i], players).forEach(({ teamId }) => {
-      totals[teamId] = (totals[teamId] || 0) + 1
+      totals[teamId] = (totals[teamId] || 0) + mult
     })
   }
   return totals
@@ -95,6 +100,18 @@ export function getChipHolderBefore(holes, holeNumber) {
     if (holes[i]?.chipEarnedBy) holder = holes[i].chipEarnedBy
   }
   return holder
+}
+
+/** Total multiplied points per team across all holes (for display). */
+export function computeTeamPoints(holes, players) {
+  const totals = {}
+  holes.forEach(hole => {
+    const mult = getHoleMultiplier(hole)
+    getHolePointAwards(hole, players).forEach(({ teamId }) => {
+      totals[teamId] = (totals[teamId] || 0) + mult
+    })
+  })
+  return totals
 }
 
 /** Final chip holders for front 9 (after hole 9) and back 9 (after hole 18). */
